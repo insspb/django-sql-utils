@@ -14,11 +14,7 @@ def parse_args():
         parser.print_help()
         sys.exit(1)
 
-    if not options.unittest:
-        options.unittest = []
-    else:
-        options.unittest = [options.unittest]
-
+    options.unittest = [options.unittest] if options.unittest else []
     return options
 
 

@@ -151,10 +151,7 @@ class SubqueryAggregate(Subquery):
         return queryset.annotate(**annotation).values('aggregation')
 
     def aggregate_kwargs(self):
-        if self.distinct:
-            return {'distinct': self.distinct}
-        else:
-            return dict()
+        return {'distinct': self.distinct} if self.distinct else {}
 
     def _get_annotation(self, query, allow_joins, reuse, summarize):
         resolved_expression = self.expression.resolve_expression(query, allow_joins, reuse, summarize)
@@ -174,11 +171,7 @@ class SubqueryAggregate(Subquery):
 
         aggregation = self.aggregate(target_expression, **kwargs)
 
-        annotation = {
-            'aggregation': aggregation
-        }
-
-        return annotation
+        return {'aggregation': aggregation}
 
     def _resolve_to_target(self, resolved_expression, query, allow_joins, reuse, summarize):
         if resolved_expression.get_source_expressions():
@@ -242,7 +235,7 @@ class Exists(Subquery):
     def as_sql(self, compiler, connection, template=None, **extra_context):
         sql, params = super(Exists, self).as_sql(compiler, connection, template, **extra_context)
         if self.negated:
-            sql = 'NOT {}'.format(sql)
+            sql = f'NOT {sql}'
         return sql, params
 
     def as_oracle(self, compiler, connection, template=None, **extra_context):
@@ -250,7 +243,7 @@ class Exists(Subquery):
         # CASE WHEN expression. Change the template since the When expression
         # requires a left hand side (column) to compare against.
         sql, params = self.as_sql(compiler, connection, template, **extra_context)
-        sql = 'CASE WHEN {} THEN 1 ELSE 0 END'.format(sql)
+        sql = f'CASE WHEN {sql} THEN 1 ELSE 0 END'
         return sql, params
 
     def get_queryset(self, query, allow_joins, reuse, summarize):
